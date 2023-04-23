@@ -26,10 +26,10 @@ do
       SHADOWTLS_PASSWORD=$(openssl rand -base64 24)
 
       mkdir -p $HOME/sing-box
-      wget https://github.com/SagerNet/sing-box/releases/download/v1.2.4/sing-box-1.2.4-linux-amd64.tar.gz
-      tar -xf sing-box-1.2.4-linux-amd64.tar.gz
-      cp sing-box-1.2.4-linux-amd64/sing-box "${HOME}/sing-box"
-      rm -rf sing-box-1.2.4-linux-amd64.tar.gz sing-box-1.2.4-linux-amd64
+      wget https://github.com/SagerNet/sing-box/releases/download/v1.2.6/sing-box-1.2.6-linux-amd64.tar.gz
+      tar -xf sing-box-1.2.6-linux-amd64.tar.gz
+      cp sing-box-1.2.6-linux-amd64/sing-box "${HOME}/sing-box"
+      rm -rf sing-box-1.2.6-linux-amd64.tar.gz sing-box-1.2.6-linux-amd64
       cat << EOF > "${HOME}/sing-box/config.json"
 {
 	"log": {
