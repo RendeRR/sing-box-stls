@@ -1,13 +1,15 @@
 #!/bin/bash
 
-echo "Select an option"
+echo "Enter the option number and press enter"
 select opt in install update_config update_sing_box uninstall quit
 do
   case $opt in
     install)
       echo "Enter your VPS IP and press enter"
       read -r -e VPS_IP
-      echo "Enter domain and press enter"
+      echo "Enter a domain and press enter"
+      echo "Domain should be a popular non-blocked website like apple.com"
+      echo "and that should also support TLS 1.3"
       read -r -e SITE
       echo "Enter port number 1-65535 Or type random for random port then press enter"
       read -r -e PORT
@@ -63,6 +65,7 @@ do
 				"server": "${SITE}",
 				"server_port": 443
 			},
+      "strict_mode": true,
 			"detour": "shadowsocks-in"
 		},
 		{
@@ -114,6 +117,16 @@ EOF
       systemctl daemon-reload
       systemctl enable sing-box.service
       systemctl start sing-box.service
+
+      cat << EOF > "${HOME}/sing-box/restart-sing-box.sh"
+#!/bin/bash
+systemctl restart sing-box.service
+EOF
+      chmod +x "${HOME}/sing-box/restart-sing-box.sh"
+      #restart sing-box.service every 2 days
+      #to fix possible over consuming memory at 3:00 am
+      (crontab -l 2>/dev/null; echo "0 3 */2 * * ${HOME}/sing-box/restart-sing-box.sh") | crontab -
+
 			echo "Done!"
 			echo "Copy this content for client config.json file"
       cat << EOF
@@ -234,6 +247,7 @@ EOF
 				"server": "${SITE}",
 				"server_port": 443
 			},
+      "strict_mode": true,
 			"detour": "shadowsocks-in"
 		},
 		{
@@ -359,6 +373,7 @@ EOF
       systemctl stop sing-box.service
       rm "/etc/systemd/system/sing-box.service"
       systemctl daemon-reload
+      crontab -l | grep -v "restart-sing-box.sh" | crontab -
       rm -rf "${HOME}/sing-box"
       echo "Uninstalled!" 
       break;;
