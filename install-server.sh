@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Select an option"
-select opt in install update_config uninstall quit
+select opt in install update_config update_sing_box uninstall quit
 do
   case $opt in
     install)
@@ -26,10 +26,15 @@ do
       SHADOWTLS_PASSWORD=$(openssl rand -base64 24)
 
       mkdir -p $HOME/sing-box
-      wget https://github.com/SagerNet/sing-box/releases/download/v1.2.6/sing-box-1.2.6-linux-amd64.tar.gz
-      tar -xf sing-box-1.2.6-linux-amd64.tar.gz
-      cp sing-box-1.2.6-linux-amd64/sing-box "${HOME}/sing-box"
-      rm -rf sing-box-1.2.6-linux-amd64.tar.gz sing-box-1.2.6-linux-amd64
+      #get latest version
+      LATEST_URL=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/SagerNet/sing-box/releases/latest)
+      LATEST_VERSION="$(echo $LATEST_URL |grep -o -E '/.?[0-9|\.]+$'| grep -o -E '[0-9|\.]+')"
+      LINK="https://github.com/SagerNet/sing-box/releases/download/v${LATEST_VERSION}/sing-box-${LATEST_VERSION}-linux-amd64.tar.gz"
+      wget "$LINK"
+      tar -xf "sing-box-${LATEST_VERSION}-linux-amd64.tar.gz"
+      cp "sing-box-${LATEST_VERSION}-linux-amd64/sing-box" "${HOME}/sing-box"
+      rm -rf "sing-box-${LATEST_VERSION}-linux-amd64.tar.gz" "sing-box-${LATEST_VERSION}-linux-amd64"
+
       cat << EOF > "${HOME}/sing-box/config.json"
 {
 	"log": {
@@ -333,6 +338,21 @@ EOF
   }
 }
 EOF
+      break;;
+    update_sing_box)
+      systemctl stop sing-box.service
+
+      #get latest version
+      LATEST_URL=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/SagerNet/sing-box/releases/latest)
+      LATEST_VERSION="$(echo $LATEST_URL |grep -o -E '/.?[0-9|\.]+$'| grep -o -E '[0-9|\.]+')"
+      LINK="https://github.com/SagerNet/sing-box/releases/download/v${LATEST_VERSION}/sing-box-${LATEST_VERSION}-linux-amd64.tar.gz"
+      wget "$LINK"
+      tar -xf "sing-box-${LATEST_VERSION}-linux-amd64.tar.gz"
+      cp "sing-box-${LATEST_VERSION}-linux-amd64/sing-box" "${HOME}/sing-box"
+      rm -rf "sing-box-${LATEST_VERSION}-linux-amd64.tar.gz" "sing-box-${LATEST_VERSION}-linux-amd64"
+
+      systemctl start sing-box.service
+      echo "Latest version installed!" 
       break;;
     uninstall)
       systemctl disable sing-box.service
